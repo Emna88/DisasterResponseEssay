@@ -4,23 +4,28 @@ import pandas as pd
 import numpy as np
 from sqlalchemy import create_engine
 
-import re
 import nltk
-nltk.download(['omw-1.4','punkt', 'wordnet', 'averaged_perceptron_tagger','stopwords'])
+nltk.download('punkt')
+nltk.download('stopwords')
+nltk.download('wordnet')
+nltk.download('averaged_perceptron_tagger')
+
+# import statements
 from nltk.tokenize import word_tokenize
+from nltk.tokenize import sent_tokenize
+import re
 from nltk.corpus import stopwords
 from nltk.stem.wordnet import WordNetLemmatizer
 
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
-from sklearn.multioutput import MultiOutputClassifier
-from sklearn.model_selection import GridSearchCV
-from xgboost import XGBClassifier
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
-
+from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import classification_report
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.multioutput import MultiOutputClassifier
 
 import pickle
 
@@ -121,39 +126,18 @@ def build_model():
     """
  
     pipeline = Pipeline([
-        ('features', FeatureUnion([
-
-            ('text_pipeline', Pipeline([
-                ('vect', CountVectorizer(tokenizer=tokenize)),
-                ('tfidf', TfidfTransformer())
-            ])),
-            #('length', LengthExtractor()),
-            ('starting_noun', StartingNounExtractor()),
-            ('starting_verb', StartingVerbExtractor())
-        ])),
-
-        ('xgbclassifier', MultiOutputClassifier(XGBClassifier(objective='binary:logistic',random_state = 42)))
+        ('vect', CountVectorizer(tokenizer=tokenize)),
+        ('tfidf', TfidfTransformer()),
+        ('clf', MultiOutputClassifier(RandomForestClassifier()))
     ])
     
-    # We can use different parameters for accuracy. Since, our goal is to just build the pipeline,I chose "learning_rate" and "gamma". User can uncomment other lines to experiment with the accuracy.
     
     parameters = {
-        #'features__text_pipeline__vect__ngram_range': ((1, 1), (1, 2)),
-        #'features__text_pipeline__vect__max_df': (0.5, 0.75, 1.0),
-        #'features__text_pipeline__vect__max_features': (None, 5000, 10000),
-        #'features__text_pipeline__tfidf__use_idf': (True, False),
-        'xgbclassifier__estimator__n_estimators': [100, 200, 300],
-        #'xgbclassifier__estimator__learning_rate': [0.1, 0.3],
-        'xgbclassifier__estimator__max_depth': [3,5,10],
-        #'xgbclassifier__estimator__gamma': [0.5, 1],
-        #'features__transformer_weights': (
-            #{'text_pipeline': 1, 'starting_verb': 0.5,'starting_noun': 0.5},
-            #{'text_pipeline': 0.5, 'starting_verb': 1,'starting_noun': 0.5},
-            #{'text_pipeline': 1, 'starting_verb': 0.5,'starting_noun': 1},
-        #)
+        'clf__n_estimators': [50, 100, 200],
+        'clf__min_samples_split': [2, 3, 4]
     }
 
-    cv = GridSearchCV(pipeline, param_grid=parameters,cv = 5)
+    cv = GridSearchCV(pipeline, param_grid=parameters, cv=5,scoring='f1_micro', n_jobs=-1)
     
     return cv
 
