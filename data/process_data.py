@@ -54,7 +54,7 @@ def clean_data(df):
 
 
 def save_data(df, database_filename):
-     """
+    """
     Funtion to save df into sqlite3
     INPUT
     df - Pandas Dataframe
@@ -62,7 +62,7 @@ def save_data(df, database_filename):
     OUTPUT
     None
     """
-    engine = create_engine('sqlite:///'+database_filename)
+    engine = create_engine('sqlite:///' + database_filename)
     df.to_sql('DisasterResponseTable' , engine ,if_exists='replace', index=False)
 
 
