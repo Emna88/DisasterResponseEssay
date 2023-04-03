@@ -133,11 +133,11 @@ def build_model():
     
     
     parameters = {
-        'clf__n_estimators': [50, 100, 200],
+        'clf__n_estimators': [5],
         'clf__min_samples_split': [2, 3, 4]
     }
 
-    cv = GridSearchCV(pipeline, param_grid=parameters, cv=5,scoring='f1_micro', n_jobs=-1)
+    cv = GridSearchCV(pipeline, param_grid=parameters, cv=2,scoring='f1_micro', n_jobs=-1)
     
     return cv
 
