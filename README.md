@@ -1,5 +1,20 @@
 # Disaster Response Pipeline Project
 
+The purpose of this project is a machine learning classifier that reads messages collecting during a disaster and classifies them into categories so they can be answered appropriately.
+
+
+The proposed algorithm reads messages, clean and tokenize them and fed them to a ML pipeline that permits to classify each message to the appropriate label.
+
+### File Descriptions
+data/process_data.py - The ETL script
+models/train_classifier - The model building steps
+app/run.py - The server for the website
+app/templates - The website HTML files
+data/*.csv - The dataset
+
+### Installation
+Run pip install -r requirements.txt
+
 ### Instructions:
 1. Run the following commands in the project's root directory to set up your database and model.
 
