@@ -20,12 +20,12 @@ from nltk.stem.wordnet import WordNetLemmatizer
 from sklearn.pipeline import Pipeline, FeatureUnion
 from sklearn.metrics import confusion_matrix
 from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import classification_report
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.multioutput import MultiOutputClassifier
+from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, AdaBoostClassifier
 
 import pickle
 
@@ -124,18 +124,28 @@ def build_model():
     OUTPUT
     cv - model instance 
     """
- 
+    """
     pipeline = Pipeline([
         ('vect', CountVectorizer(tokenizer=tokenize)),
         ('tfidf', TfidfTransformer()),
         ('clf', MultiOutputClassifier(RandomForestClassifier()))
     ])
+    """
+    pipeline = Pipeline([
+        ('features', FeatureUnion([
+
+            ('text_pipeline', Pipeline([
+                ('count_vectorizer', CountVectorizer(tokenizer=tokenize)),
+                ('tfidf_transformer', TfidfTransformer())
+            ])),
+
+        ])),
+
+        ('classifier', MultiOutputClassifier(AdaBoostClassifier()))
+    ])
     
-    
-    parameters = {
-        'clf__n_estimators': [5],
-        'clf__min_samples_split': [2, 3, 4]
-    }
+    parameters = {'classifier__estimator__learning_rate': [0.01, 0.02, 0.05],
+              'classifier__estimator__n_estimators': [5]}
 
     cv = GridSearchCV(pipeline, param_grid=parameters, cv=2,scoring='f1_micro', n_jobs=-1)
     
